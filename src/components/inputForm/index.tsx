@@ -1,19 +1,27 @@
 import styled from "styled-components";
-import { Button } from "../button";
-import { Container, Wrapper } from "./Container";
+import { Button, Spinner } from "../button";
+import { Container, InputWrapper, Wrapper } from "./Container";
 import { useRef, useState } from "react";
+import { spinner } from "../../assets";
 
 const Form = styled.form``;
 
-const Input = styled.input``;
+const Input = styled.input`
+  background-color: #858585;
+  border-radius: 5px;
+`;
 
-const Select = styled.select``;
+const Select = styled.select`
+  background-color: #858585;
+  border-radius: 5px;
+`;
 
 const Label = styled.label``;
 
 export const InputForm = () => {
   const [language, setLanguage] = useState<string>("portuguese");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,18 +33,24 @@ export const InputForm = () => {
 
   const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
+    //define isLoading para true para desabilitar o botao e ativar a animação de carregamento
+    setIsLoading(true);
+    //verifica se existe um arquivo selecionado
     if (selectedFile === null) {
       return;
     }
+    //constrói o formData que será responsável por enviar os dados do formulário
     const formDataToSend = new FormData();
     formDataToSend.append("language", language);
     formDataToSend.append("file", selectedFile);
     try {
+      //requisição para o back
       const response = await fetch("https://urahara31.pythonanywhere.com/", {
         body: formDataToSend,
         method: "POST",
       });
       const result = await response.json();
+      //escreve no campo definido o resultado
       if (result.is_productive !== null) {
         const elem = document.getElementById("resultText");
         if (elem !== null) {
@@ -50,6 +64,8 @@ export const InputForm = () => {
     } catch (e) {
       console.error(e);
     }
+    //define isLoading para false para habilitar o botao e desativar a animação de carregamento
+    setIsLoading(false);
   };
 
   return (
@@ -57,18 +73,20 @@ export const InputForm = () => {
       <Form onSubmit={handleSubmit} encType="multipart/form-data">
         <Wrapper>
           <Label htmlFor="formData">Informe a linguagem do arquivo</Label>
+          {/* select para definir a linguagem que o back vai buscar as stopwords */}
           <Select
             name="formData"
             id="formData"
-            onChange={() => setLanguage}
+            onChange={(e) => setLanguage(e.target.value)}
             value={language}
           >
             <option value={"portuguese"}>Português</option>
             <option value={"english"}>English</option>
           </Select>
         </Wrapper>
-        <Wrapper>
-          <Label htmlFor="file">Arquivo de email (.txt ou pdf)</Label>
+        {/* input do arquivo */}
+        <InputWrapper>
+          <Label htmlFor="file">Arquivo de email (txt ou pdf)</Label>
           <Input
             type="file"
             accept=".txt, .pdf"
@@ -79,8 +97,15 @@ export const InputForm = () => {
             onChange={handleFileChange}
             required
           />
-        </Wrapper>
-        <Button>Enviar</Button>
+        </InputWrapper>
+        {/* botão de submit */}
+        {isLoading ? (
+          <Button disabled>
+            <Spinner src={spinner}></Spinner>
+          </Button>
+        ) : (
+          <Button>Enviar</Button>
+        )}
       </Form>
     </Container>
   );

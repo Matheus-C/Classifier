@@ -9,7 +9,7 @@ function App() {
       <div className="card">
         <InputForm />
       </div>
-      <div className="card">
+      <div className="card" id="result_container">
         <Result />
       </div>
     </>
