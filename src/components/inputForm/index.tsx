@@ -38,13 +38,12 @@ export const InputForm = () => {
       });
       const result = await response.json();
       if (result.is_productive !== null) {
-        if (document.getElementById("resultText") !== null) {
+        const elem = document.getElementById("resultText");
+        if (elem !== null) {
           if (result.is_productive) {
-            document.getElementById("resultText").innerHTML =
-              "O email é produtivo";
+            elem.innerHTML = "O email é produtivo";
           } else {
-            document.getElementById("resultText").innerHTML =
-              "O email não é produtivo";
+            elem.innerHTML = "O email não é produtivo";
           }
         }
       }
